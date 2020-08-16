@@ -6,8 +6,19 @@ from PIL import Image, ImageDraw
 import glob
 import matplotlib.pyplot as plt
 
-# Observng depth data withing these dimensions
+# Observing depth data withing these dimensions
 box_dim = (200, 200, 250, 250)
+
+def display_depth_frame(frame):
+    """ In-the-loop display; used for debug only """
+    min, max = np.min(frame), np.max(frame)
+    print('min, max', min, max)
+    frame = frame * 255 /(max - min)
+    rgb = PIL.Image.fromarray(frame)
+    draw = ImageDraw.Draw(rgb)
+    draw.rectangle(box_dim, fill=None, outline="red")
+    rgb.show()
+    
 
 def scaled_np_frame(frame):
     min, max = np.min(frame), np.max(frame)
@@ -42,6 +53,7 @@ for i, f_name in enumerate(file_list):
     np_frame = df.to_numpy()
 
     print('original image size:', df.shape)
+    # display_depth_frame(np_frame)
     cropped_img = scaled_np_frame(np_frame)
 
     get_min_max_avg(cropped_img)
