@@ -5,9 +5,15 @@ import PIL
 from PIL import Image, ImageDraw
 import glob
 import matplotlib.pyplot as plt
+import scipy
 
 # Observing depth data withing these dimensions
-box_dim = (200, 200, 250, 250)
+box_dim = (200, 150, 300, 250)
+
+skip_init_frames = 200
+last_frame = 1000
+display_period = 5000
+kernel_size = 9
 
 def display_depth_frame(frame):
     """ In-the-loop display; used for debug only """
@@ -41,13 +47,18 @@ axes.set_ylim(0, 100)
 max_line, = axes.plot(xdata, mean_data, 'r-')
 
 mean_seq = []
-for i, f_name in enumerate(file_list): 
+for i, f_name in enumerate(file_list):
+    if i < skip_init_frames:
+        continue
+    if i > last_frame:
+        continue
     print(f_name) 
     df = pd.read_csv(f_name, header=None) 
     np_frame = df.to_numpy()
 
     print('original image size:', df.shape)
-    # display_depth_frame(np_frame)
+    if i % display_period == 0:
+        display_depth_frame(np_frame)
     cropped_img = scaled_np_frame(np_frame)
     print('cropped image shape', cropped_img.shape)
 
@@ -63,4 +74,13 @@ for i, f_name in enumerate(file_list):
     plt.draw()
     plt.pause(0.05)
 
+plt.show()
+
+import scipy
+from scipy import signal
+mean_data = scipy.signal.medfilt(mean_data, kernel_size=kernel_size)
+
+import matplotlib.pyplot as plt
+plt.plot(mean_data)
+plt.ylabel('some numbers')
 plt.show()
