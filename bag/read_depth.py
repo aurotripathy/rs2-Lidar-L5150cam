@@ -7,7 +7,7 @@ import glob
 import matplotlib.pyplot as plt
 import scipy
 
-# Observing depth data withing these dimensions
+# Using  depth data withing these dimensions
 box_dim = (200, 150, 300, 250)
 
 skip_init_frames = 200
@@ -29,14 +29,14 @@ def display_depth_frame(frame):
 def crop(img, box_dim):
     return img[box_dim[0]:box_dim[2], box_dim[1]:box_dim[3]]    
 
-def scaled_np_frame(frame):
+def crop_np_frame(frame):
     min, max = np.min(frame), np.max(frame)
     print('min, max', min, max)
     frame = frame * 255 /(max - min)
     return crop(frame, box_dim)
 
 xdata = []
-mean_data = []
+means_over_time = []
 
 file_list = glob.glob('./out/*.csv')
 print('File count:', len(file_list))
@@ -44,9 +44,8 @@ print('File count:', len(file_list))
 axes = plt.gca()
 axes.set_xlim(0, len(file_list))
 axes.set_ylim(0, 100)
-max_line, = axes.plot(xdata, mean_data, 'r-')
+max_line, = axes.plot(xdata, means_over_time, 'r-')
 
-mean_seq = []
 for i, f_name in enumerate(file_list):
     if i < skip_init_frames:
         continue
@@ -59,17 +58,16 @@ for i, f_name in enumerate(file_list):
     print('original image size:', df.shape)
     if i % display_period == 0:
         display_depth_frame(np_frame)
-    cropped_img = scaled_np_frame(np_frame)
-    print('cropped image shape', cropped_img.shape)
+    cropped_img = crop_np_frame(np_frame)
+    # print('Cropped image shape', cropped_img.shape)
 
     mean = np.mean(cropped_img)
-    print('numpy mean', mean)
-    mean_seq.append(mean)
+    print('Cropped image mean:', mean)
+    means_over_time.append(mean)
 
     xdata.append(i)
-    mean_data.append(mean)
     max_line.set_xdata(xdata)
-    max_line.set_ydata(mean_data)
+    max_line.set_ydata(means_over_time)
 
     plt.draw()
     plt.pause(0.05)
@@ -78,9 +76,9 @@ plt.show()
 
 import scipy
 from scipy import signal
-mean_data = scipy.signal.medfilt(mean_data, kernel_size=kernel_size)
+filtered_means_over_time = scipy.signal.medfilt(means_over_time, kernel_size=kernel_size)
 
 import matplotlib.pyplot as plt
-plt.plot(mean_data)
-plt.ylabel('some numbers')
+plt.plot(filtered_means_over_time)
+plt.ylabel('Mediam smoothed values')
 plt.show()
