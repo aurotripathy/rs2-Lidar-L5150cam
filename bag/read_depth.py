@@ -35,7 +35,7 @@ def crop_np_frame(frame):
     frame = frame * 255 /(max - min)
     return crop(frame, box_dim)
 
-xdata = []
+time_axis = []
 means_over_time = []
 
 file_list = glob.glob('./out/*.csv')
@@ -44,7 +44,7 @@ print('File count:', len(file_list))
 axes = plt.gca()
 axes.set_xlim(0, len(file_list))
 axes.set_ylim(0, 100)
-max_line, = axes.plot(xdata, means_over_time, 'r-')
+max_line, = axes.plot(time_axis, means_over_time, 'r-')
 
 for i, f_name in enumerate(file_list):
     if i < skip_init_frames:
@@ -65,12 +65,12 @@ for i, f_name in enumerate(file_list):
     print('Cropped image mean:', mean)
     means_over_time.append(mean)
 
-    xdata.append(i)
-    max_line.set_xdata(xdata)
+    time_axis.append(i)
+    max_line.set_xdata(time_axis)
     max_line.set_ydata(means_over_time)
 
     plt.draw()
-    plt.pause(0.05)
+    plt.pause(0.025)
 
 plt.show()
 
